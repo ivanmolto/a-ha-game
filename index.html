@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>ZIM - Code Creativity</title>
+	<script src="https://zimjs.org/cdn/1.3.2/createjs.js"></script>
+	<script src="https://zimjs.org/cdn/cat/00/zim.js"></script>
+	<script src="https://zimjs.org/cdn/icon6.js"></script>
+	<script src="https://zimjs.org/cdn/game_2.3.js"></script>
+	<script>
+		const scaling = "fit"; 
+		const width = 1024;
+		const height = 768;
+		const color = light; 
+		const outerColor = dark; 
+
+		const frame = new Frame("fit", 1024, 768, "#A496A4".lighten(.8), "#A496A4".lighten(.3));
+		frame.on("ready", ()=>{ 
+			zog("ready from ZIM Frame"); 
+
+			
+			const stage = frame.stage;
+			const stageW = frame.width;
+			const stageH = frame.height;
+
+			
+					
+			const colors = ["#A5A7BB", "#A496A4", "#554d73"];
+			const size = 520; 
+			let num = 4; 
+			
+			
+			new Rectangle(900,530,"#A5A7BB",yellow).alp(.2).loc(50,70)
+			
+			
+			new Rectangle(size+5,size+5,dark).rot(45).center();
+			
+			
+			
+			function makeParticle() {
+				return new Rectangle(size/num,size/num, colors, dark).rot(45);
+			}
+			
+			const emitter = new Emitter({
+				obj:makeParticle,
+				startPaused:true,
+				gravity:0,
+				force:{min:10, max:20}
+			});
+			
+			
+			let correct = null;
+			function startRound() {
+				correct = rand(num*num-1); 
+				correctColor = shuffle(colors)[0];	
+				emitter.clearPool(); 
+			}
+			startRound();	
+			
+			
+			
+			let tile = null;
+			timer = interval(.6, ()=>{
+				if (tile) tile.removeFrom();
+				tile = new Tile(new Rectangle(size/num,size/num,colors,dark).centerReg(), num, num)
+					.rot(45)
+					.cur()			
+					.centerReg(stage, 2) 		
+				tile.on("mousedown", ()=>{
+					wrong.score++;
+				});
+				
+				let correctTile = tile.getChildAt(correct);
+				
+				correctTile.color = correctColor;
+				correctTile.on("mousedown", ()=>{
+					emitter.loc(correctTile).spurt(10);
+					
+					num++;
+					if (num > dial.max) num = dial.min;
+					dial.currentValue = num;
+					right.score++;
+					wrong.score--; 
+					startRound();
+				}, null, true); 
+					
+				stage.update();
+				
+			}, null, true); 
+			
+			
+			STYLE = {
+				backgroundColor:"#554d73".lighten(.3),
+				toggleBackgroundColor:"#A5A7BB",
+				color:"#554d73",
+				shadowColor:"none",
+				font:"impact",
+				size:30,
+				shiftVertical:2 
+			}
+			
+			const interface = new Container(stageW, stageH)
+				.addTo()
+				.animate({
+					from:true,
+					wait:1,
+					props:{y:300},
+					ease:"backOut",
+					time:.7
+				})
+			
+			const dial = new Dial({min:4, max:12})
+				.pos(70,30,LEFT,BOTTOM,interface)
+				.change(e=>{
+					num = e.target.currentValue;
+					startRound();			
+				});
+			
+			new Toggle({label:"PAUSE"})
+				.sca(.7)
+				.pos(200,30,LEFT,BOTTOM,interface)
+				.change(e=>{
+					timer.pause(e.target.toggled);
+				});
+			
+			new Slider({
+				barLength:150, 
+				min:1, max:.2, 
+				button:"aztec",
+				useTicks:true,
+				step:.1,
+				currentValue:.6
+			})
+				.sca(1.1)
+				.pos(150,45,RIGHT,BOTTOM,interface)			
+				.change(e=>{
+					timer.time = e.target.currentValue;
+				});
+				
+			STYLE = {font:"impact", color:"#554d73"};
+					
+			new Label("A-HA GAME!", 60)
+				.centerReg()
+				.loc(194, 210)
+				.rot(-45)
+					.animate({
+						from:true,
+						props:{scale:0},
+						time:.5,
+						ease:"backOut",
+						wait:.3		
+					})
+				// .place();
+			new Label("PRESS SQUARE THAT DOES NOT CHANGE", 20)
+				.centerReg()
+				.alp(.6)
+				.loc(233, 232)
+				.rot(-45)
+				.animate({
+					from:true,
+					props:{scale:0},
+					time:.5,
+					wait:.6,
+					ease:"backOut"
+				})
+				
+			const scores = new Container(stageW, stageH)
+				.addTo()
+				.animate({
+					from:true,
+					props:{y:-300},
+					time:.7,
+					ease:"backOut",
+					wait:1.3			
+				})
+			
+			new Label("RIGHT").sca(.5).loc(880, 30, scores);
+			new Label("WRONG").sca(.5).loc(880, 150, scores);
+			
+			STYLE = {};
+			
+			const right = new Scorer({backgroundColor:"#A5A7BB"}).pos(50,50,RIGHT,TOP,scores)
+			const wrong = new Scorer({backgroundColor:"#A496A4"}).pos(50,170,RIGHT,TOP,scores)
+
+			
+			timeout(2, function(){
+				createIcon();
+			});
+
+		}); 
+
+	</script>
+
+<meta name="viewport" content="width=device-width, user-scalable=no" />
+
+</head>
+
+<body>
+
+</body>
+</html>
